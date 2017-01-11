@@ -10,11 +10,9 @@ defmodule NoSlides do
         :ok = :riak_core_node_watcher.service_up(NoSlides.Service, self())
         {:ok, pid}
       {:error, reason} ->
-        Logger.error("Unable to start La Rocca supervisor because: #{inspect reason}")
+        Logger.error("Unable to start NoSlides supervisor because: #{inspect reason}")
     end
 
   end
-
-
 
 end
