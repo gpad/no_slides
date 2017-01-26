@@ -42,7 +42,7 @@ defmodule NoSlides.Service do
 
     [{index_node, _type}] = pref_list
 
-    :riak_core_vnode_master.sync_command(index_node, {:get, k}, NoSlides.VNode_master)
+    :riak_core_vnode_master.sync_command(index_node, {:get, {k}}, NoSlides.VNode_master)
   end
 
   def ft_put(k, v) do
@@ -50,9 +50,14 @@ defmodule NoSlides.Service do
     wait_for(req_id)
   end
 
+  def ft_get(k) do
+    {:ok, req_id } = NoSlides.GetFsm.get(k)
+    wait_for(req_id)
+  end
+
   def ring_status() do
     {:ok, ring} = :riak_core_ring_manager.get_my_ring
-    :riak_core_ring.pretty_print(ring, [:legend]) 
+    :riak_core_ring.pretty_print(ring, [:legend])
   end
 
   defp wait_for(req_id, timeout \\ 5000) do

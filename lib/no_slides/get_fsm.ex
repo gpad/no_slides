@@ -1,21 +1,21 @@
-defmodule NoSlides.WriteFsm do
+defmodule NoSlides.GetFsm do
   require Logger
 
   @timeout 10000
 
-  def write(k, v) do
+  def get(k) do
     req_id = mk_reqid()
-    NoSlides.WriteFsmSupervisor.start_write_fsm([req_id, self(), k, v])
+    NoSlides.GetFsmSupervisor.start_get_fsm([req_id, self(), k])
     {:ok, req_id}
   end
 
-  def start_link(req_id, from, k, v) do
-    Logger.debug "Start WriteFSM"
-    :gen_fsm.start_link({:local, :write_fsm}, __MODULE__, [req_id, from, k, v], [])
+  def start_link(req_id, from, k) do
+    Logger.debug "Start GetFSM"
+    :gen_fsm.start_link({:local, :get_fsm}, __MODULE__, [req_id, from, k], [])
   end
 
-  def init([req_id, from, k, v]) do
-    {:ok, :prepare, %{req_id: req_id, from: from, key: k, value: v, writers: 0}, 0}
+  def init([req_id, from, k]) do
+    {:ok, :prepare, %{req_id: req_id, from: from, key: k, readers: 0, results: []}, 0}
   end
 
   # GEt info about on wich nodes write
@@ -34,7 +34,7 @@ defmodule NoSlides.WriteFsm do
 
     :riak_core_vnode_master.command(
       state.pref_list,
-      {:put, {state.req_id, state.key, state.value}},
+      {:get, {state.req_id, state.key}},
       {:fsm, :undefined, self()},
       NoSlides.VNode_master)
 
@@ -46,15 +46,16 @@ defmodule NoSlides.WriteFsm do
 
   # check if we have all data then return it otherwise wait again ... (FOREVER?!??)
   # Why we don't check who resposnse??!
-  def consolidate({:ok, req_id}, state) do
-    Logger.info("[CONSOLIDATE] req_id: #{req_id} - state: #{inspect state}")
-    writers = state.writers + 1
+  def consolidate({:ok, req_id, value}, state) do
+    Logger.info("[CONSOLIDATE] req_id: #{req_id} - value: #{inspect value}- state: #{inspect state}")
+    state = Map.put(state, :readers, state.readers + 1)
+    state = Map.put(state, :results, [value | state.results])
 
-    if writers == 3 do
-      send(state.from, {state.req_id, :ok})
+    if state.readers == 3 do
+      send(state.from, {state.req_id, :ok, Enum.uniq(state.results)})
       {:stop, :normal, state}
     else
-      {:next_state, :consolidate, Map.put(state, :writers, writers), @timeout}
+      {:next_state, :consolidate, state, @timeout}
     end
   end
 

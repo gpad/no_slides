@@ -32,12 +32,17 @@ defmodule NoSlides.VNode do
   def handle_command({:put, {req_id, k, v}}, sender, state) do
     Logger.debug("[ft_put]: req_id: #{inspect req_id} k: #{inspect k} v: #{inspect v} - sender: #{inspect sender}")
     new_state = Map.update(state, :data, %{}, fn data -> Map.put(data, k, v) end)
-    {:reply, {:ok, req_id}, state}
+    {:reply, {:ok, req_id}, new_state}
   end
 
-  def handle_command({:get, k}, sender, state) do
+  def handle_command({:get, {k}}, sender, state) do
     Logger.debug("[get]: k: #{inspect k}")
     {:reply, Map.get(state.data, k, nil), state}
+  end
+
+  def handle_command({:get, {req_id, k}}, sender, state) do
+    Logger.debug("[ft_get]: req_id: #{inspect req_id} k: #{inspect k} - sender: #{inspect sender}")
+    {:reply, {:ok, req_id, Map.get(state.data, k, nil)}, state}
   end
 
   def handoff_starting(dest, state) do
