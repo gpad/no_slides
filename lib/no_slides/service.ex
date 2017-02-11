@@ -45,4 +45,28 @@ defmodule NoSlides.Service do
     :riak_core_vnode_master.sync_command(index_node, {:get, k}, NoSlides.VNode_master)
   end
 
+  def keys do
+    req_id = NoSlides.KeysCoverageFsmSupervisor.start_keys_fsm(:keys)
+    receive do
+      {req_id, {:ok, keys}} ->
+        keys
+      {req_id, {:error, reason}} ->
+        {:error, reason}
+    after 5000 ->
+      {:error, :timeout}
+    end
+  end
+
+  def values do
+    req_id = NoSlides.KeysCoverageFsmSupervisor.start_keys_fsm(:values)
+    receive do
+      {req_id, {:ok, keys}} ->
+        keys
+      {req_id, {:error, reason}} ->
+        {:error, reason}
+    after 5000 ->
+      {:error, :timeout}
+    end
+  end
+
 end

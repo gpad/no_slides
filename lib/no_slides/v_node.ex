@@ -98,9 +98,11 @@ defmodule NoSlides.VNode do
     :erlang.term_to_binary({k, v})
   end
 
-  def handle_coverage(req, key_spaces, sender, state) do
-    Logger.debug "handle_coverage VNODE self: #{inspect self} #{inspect state}"
-    {:stop, :not_implemented, state}
+  def handle_coverage({:keys, _, _} = req, key_spaces, {_, ref_id, _} = sender, state) do
+    Logger.debug "handle_coverage VNODE req: #{inspect req}, key_spaces: #{inspect key_spaces} self: #{inspect self} sender: #{inspect sender} - #{inspect state}"
+    # {:stop, :not_implemented, state}
+    {:reply, {ref_id, Map.keys(state.data)}, state}
+    # {:reply, Map.get(state.data, k, nil), state}
   end
 
   def handle_exit(pid, reason, state) do
