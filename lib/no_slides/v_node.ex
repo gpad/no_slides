@@ -2,17 +2,12 @@ defmodule NoSlides.VNode do
   require Logger
   @behaviour :riak_core_vnode
 
-  # This function is called to create vnode
   def start_vnode(partition) do
-    # Logger.debug "[start_vnode] partition: #{inspect partition} - self: #{inspect self} ..."
-    pid = :riak_core_vnode_master.get_vnode_pid(partition, __MODULE__)
-    # Logger.debug "<< [start_vnode] return pid: #{inspect pid} for partition: #{inspect partition} - self: #{inspect self}"
-    pid
+    :riak_core_vnode_master.get_vnode_pid(partition, __MODULE__)
   end
 
   def init([partition]) do
     Logger.debug("Init on partition: #{inspect partition} - self: #{inspect self()}")
-    # {:ok, %{partition: partition, data: %{node() => node()}}}
     {:ok, %{partition: partition, data: %{}}}
   end
 
@@ -26,7 +21,7 @@ defmodule NoSlides.VNode do
   def handle_command({:put, {k, v}}, _sender, state) do
     Logger.debug("[put]: k: #{inspect k} v: #{inspect v}")
     new_state = Map.update(state, :data, %{}, fn data -> Map.put(data, k, v) end)
-    {:reply, :pong, new_state}
+    {:reply, :ok, new_state}
   end
 
   def handle_command({:get, k}, _sender, state) do
