@@ -1,7 +1,9 @@
 defmodule NoSlides.WriteFsm do
   require Logger
 
-  @timeout 10000
+  @timeout 30_000
+  @n_writers 2
+  @n_val 3
 
   def write(k, v) do
     req_id = mk_reqid()
@@ -11,7 +13,7 @@ defmodule NoSlides.WriteFsm do
 
   def start_link(req_id, from, k, v) do
     Logger.debug "Start WriteFSM"
-    :gen_fsm.start_link({:local, :write_fsm}, __MODULE__, [req_id, from, k, v], [])
+    {:ok, _} = :gen_fsm.start_link( __MODULE__, [req_id, from, k, v], [])
   end
 
   def init([req_id, from, k, v]) do
@@ -23,14 +25,14 @@ defmodule NoSlides.WriteFsm do
     idx = :riak_core_util.chash_key({"noslides", state.key})
     # pref_list = :riak_core_apl.get_primary_apl(idx, 1, NoSlides.Service)
     #TODO Verify the 3, is correct?!?
-    pref_list = :riak_core_apl.get_apl(idx, 3, NoSlides.Service)
+    pref_list = :riak_core_apl.get_apl(idx, @n_val, NoSlides.Service)
 
     {:next_state, :execute, Map.put(state, :pref_list, pref_list), 0}
   end
 
   # Execute the call on all nodes ...
   def execute(:timeout, state) do
-    Logger.info("[EXECUTE] state: #{inspect state}")
+    # Logger.info("[EXECUTE] state: #{inspect state}")
 
     :riak_core_vnode_master.command(
       state.pref_list,
@@ -38,7 +40,7 @@ defmodule NoSlides.WriteFsm do
       {:fsm, :undefined, self()},
       NoSlides.VNode_master)
 
-    Logger.info("[EXECUTE] next_state: consolidate")
+    # Logger.info("[EXECUTE] next_state: consolidate")
 
 
     {:next_state, :consolidate, state, @timeout}
@@ -46,11 +48,11 @@ defmodule NoSlides.WriteFsm do
 
   # check if we have all data then return it otherwise wait again ... (FOREVER?!??)
   # Why we don't check who resposnse??!
-  def consolidate({:ok, req_id}, state) do
-    Logger.info("[CONSOLIDATE] req_id: #{req_id} - state: #{inspect state}")
+  def consolidate({:ok, _req_id}, state) do
+    # Logger.info("[CONSOLIDATE] req_id: #{req_id} - state: #{inspect state}")
     writers = state.writers + 1
 
-    if writers == 3 do
+    if writers == @n_writers do
       send(state.from, {state.req_id, :ok})
       {:stop, :normal, state}
     else
@@ -58,7 +60,7 @@ defmodule NoSlides.WriteFsm do
     end
   end
 
-  def terminate(reason, name, state) do
+  def terminate(_reason, _name, _state) do
     :ok
   end
 

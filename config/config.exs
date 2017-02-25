@@ -39,7 +39,7 @@ config :riak_core,
   handoff_ip: '127.0.0.1',
   schema_dirs: ['priv'],
   ring_creation_size: 12,
-  vnode_inactivity_timeout: 10000
+  vnode_inactivity_timeout: 10_000
 
 config :lager,
   colored: true,

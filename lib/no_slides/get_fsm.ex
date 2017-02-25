@@ -1,7 +1,9 @@
 defmodule NoSlides.GetFsm do
   require Logger
 
-  @timeout 10000
+  @timeout 10_000
+  @n_val 3
+  @n_readers 2
 
   def get(k) do
     req_id = mk_reqid()
@@ -23,14 +25,14 @@ defmodule NoSlides.GetFsm do
     idx = :riak_core_util.chash_key({"noslides", state.key})
     # pref_list = :riak_core_apl.get_primary_apl(idx, 1, NoSlides.Service)
     #TODO Verify the 3, is correct?!?
-    pref_list = :riak_core_apl.get_apl(idx, 3, NoSlides.Service)
+    pref_list = :riak_core_apl.get_apl(idx, @n_val, NoSlides.Service)
 
     {:next_state, :execute, Map.put(state, :pref_list, pref_list), 0}
   end
 
   # Execute the call on all nodes ...
   def execute(:timeout, state) do
-    Logger.info("[EXECUTE] state: #{inspect state}")
+    # Logger.info("[EXECUTE] state: #{inspect state}")
 
     :riak_core_vnode_master.command(
       state.pref_list,
@@ -38,7 +40,7 @@ defmodule NoSlides.GetFsm do
       {:fsm, :undefined, self()},
       NoSlides.VNode_master)
 
-    Logger.info("[EXECUTE] next_state: consolidate")
+    # Logger.debug("[EXECUTE] next_state: consolidate")
 
 
     {:next_state, :consolidate, state, @timeout}
@@ -46,12 +48,12 @@ defmodule NoSlides.GetFsm do
 
   # check if we have all data then return it otherwise wait again ... (FOREVER?!??)
   # Why we don't check who resposnse??!
-  def consolidate({:ok, req_id, value}, state) do
-    Logger.info("[CONSOLIDATE] req_id: #{req_id} - value: #{inspect value}- state: #{inspect state}")
+  def consolidate({:ok, _req_id, value}, state) do
+    # Logger.debug("[CONSOLIDATE] req_id: #{req_id} - value: #{inspect value}- state: #{inspect state}")
     state = Map.put(state, :readers, state.readers + 1)
     state = Map.put(state, :results, [value | state.results])
 
-    if state.readers == 3 do
+    if state.readers == @n_readers do
       send(state.from, {state.req_id, :ok, Enum.uniq(state.results)})
       {:stop, :normal, state}
     else
@@ -59,7 +61,7 @@ defmodule NoSlides.GetFsm do
     end
   end
 
-  def terminate(reason, name, state) do
+  def terminate(_reason, _name, _state) do
     :ok
   end
 

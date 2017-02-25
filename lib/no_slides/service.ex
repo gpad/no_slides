@@ -60,7 +60,7 @@ defmodule NoSlides.Service do
     :riak_core_ring.pretty_print(ring, [:legend])
   end
 
-  defp wait_for(req_id, timeout \\ 5000) do
+  defp wait_for(req_id, timeout \\ 60_000) do
     receive do
       {^req_id, :ok} -> :ok
       {^req_id, :ok, value} -> {:ok, value}
