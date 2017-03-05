@@ -4,32 +4,32 @@ defmodule NoSlides.VNode do
 
   # This function is called to create vnode
   def start_vnode(partition) do
-    # Logger.debug "[start_vnode] partition: #{inspect partition} - self: #{inspect self} ..."
+    # Logger.debug "[start_vnode] partition: #{inspect partition} - self: #{inspect self()} ..."
     pid = :riak_core_vnode_master.get_vnode_pid(partition, __MODULE__)
-    # Logger.debug "<< [start_vnode] return pid: #{inspect pid} for partition: #{inspect partition} - self: #{inspect self}"
+    # Logger.debug "<< [start_vnode] return pid: #{inspect pid} for partition: #{inspect partition} - self: #{inspect self()}"
     pid
   end
 
   def init([partition]) do
-    Logger.debug("Init on partition: #{inspect partition} - self: #{inspect self}")
+    Logger.debug("Init on partition: #{inspect partition} - self: #{inspect self()}")
     # {:ok, %{partition: partition, data: %{node() => node()}}}
     {:ok, %{partition: partition, data: %{}}}
   end
 
-  def handle_command({:ping, v}, sender, state) do
-    Logger.debug("[ping received]: with value: #{inspect v} state: #{inspect state.partition} pid: #{inspect self}... ")
+  def handle_command({:ping, v}, _sender, state) do
+    Logger.debug("[ping received]: with value: #{inspect v} state: #{inspect state.partition} pid: #{inspect self()}... ")
     # :timer.sleep(5000)
     Logger.debug("[ping received]: respond")
     {:reply, :pong, state}
   end
 
-  def handle_command({:put, {k, v}}, sender, state) do
+  def handle_command({:put, {k, v}}, _sender, state) do
     Logger.debug("[put]: k: #{inspect k} v: #{inspect v}")
     new_state = Map.update(state, :data, %{}, fn data -> Map.put(data, k, v) end)
     {:reply, :pong, new_state}
   end
 
-  def handle_command({:get, k}, sender, state) do
+  def handle_command({:get, k}, _sender, state) do
     Logger.debug("[get]: k: #{inspect k}")
     {:reply, Map.get(state.data, k, nil), state}
   end
@@ -44,7 +44,7 @@ defmodule NoSlides.VNode do
     {:ok, state}
   end
 
-  def handoff_finished(dest, state) do
+  def handoff_finished(_dest, state) do
     Logger.debug "[handoff_finished] state: #{inspect state}"
     {:ok, state}
   end
@@ -77,7 +77,7 @@ defmodule NoSlides.VNode do
     {empty, state}
   end
 
-  def terminate(reason, state) do
+  def terminate(_reason, state) do
     Logger.debug("Terminate state: #{inspect state}")
     :ok
   end
@@ -98,15 +98,13 @@ defmodule NoSlides.VNode do
     :erlang.term_to_binary({k, v})
   end
 
-  def handle_coverage({:keys, _, _} = req, key_spaces, {_, ref_id, _} = sender, state) do
-    Logger.debug "handle_coverage VNODE req: #{inspect req}, key_spaces: #{inspect key_spaces} self: #{inspect self} sender: #{inspect sender} - #{inspect state}"
-    # {:stop, :not_implemented, state}
+  def handle_coverage({:keys, _, _} = req, _key_spaces, {_, ref_id, _} = sender, state) do
+    Logger.debug "handle_coverage VNODE req: #{inspect req} sender: #{inspect sender}"
     {:reply, {ref_id, Map.keys(state.data)}, state}
-    # {:reply, Map.get(state.data, k, nil), state}
   end
 
-  def handle_exit(pid, reason, state) do
-    Logger.debug "handle_exit VNODE self: #{inspect self} #{inspect state}"
+  def handle_exit(pid, _reason, state) do
+    Logger.debug "handle_exit VNODE self: #{inspect self()} pid: #{inspect pid} #{inspect state}"
     {:noreply, state}
   end
 
