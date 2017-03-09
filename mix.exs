@@ -29,7 +29,7 @@ defmodule NoSlides.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:riak_core, "~> 2.2", hex: :riak_core_ng}
+      {:riak_core, "~> 2.2.8", hex: :riak_core_ng}
     ]
   end
 end
