@@ -104,6 +104,11 @@ defmodule NoSlides.VNode do
     {:reply, {ref_id, Map.keys(state.data)}, state}
   end
 
+  def handle_coverage({:values, _, _} = req, _key_spaces, {_, ref_id, _} = sender, state) do
+    Logger.debug "[handle_coverage] VNODE req: #{inspect req} sender: #{inspect sender}"
+    {:reply, {ref_id, Map.values(state.data)}, state}
+  end
+
   def handle_exit(pid, reason, state) do
     Logger.debug "[handle_exit] self: #{inspect self()} - pid: #{inspect pid} - reason: #{inspect reason} - state: #{inspect state}"
     {:noreply, state}

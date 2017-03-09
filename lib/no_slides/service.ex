@@ -45,12 +45,17 @@ defmodule NoSlides.Service do
     :riak_core_vnode_master.sync_command(index_node, {:get, k}, NoSlides.VNode_master)
   end
 
+  def ring_status() do
+    {:ok, ring} = :riak_core_ring_manager.get_my_ring
+    :riak_core_ring.pretty_print(ring, [:legend])
+  end
+
   def keys do
     req_id = NoSlides.KeysCoverageFsmSupervisor.start_keys_fsm(:keys)
     receive do
-      {req_id, {:ok, keys}} ->
+      {^req_id, {:ok, keys}} ->
         keys
-      {req_id, {:error, reason}} ->
+      {^req_id, {:error, reason}} ->
         {:error, reason}
     after 5000 ->
       {:error, :timeout}
@@ -60,9 +65,9 @@ defmodule NoSlides.Service do
   def values do
     req_id = NoSlides.KeysCoverageFsmSupervisor.start_keys_fsm(:values)
     receive do
-      {req_id, {:ok, keys}} ->
+      {^req_id, {:ok, keys}} ->
         keys
-      {req_id, {:error, reason}} ->
+      {^req_id, {:error, reason}} ->
         {:error, reason}
     after 5000 ->
       {:error, :timeout}
