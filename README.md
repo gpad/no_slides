@@ -106,4 +106,4 @@ Thanks to:
 [1]: https://github.com/basho/riak_core/
 [2]: https://github.com/project-fifo/riak_core
 [3]: https://hex.pm/packages/riak_core_ng
-[99]: https://medium.com/gpad/
+[99]: https://medium.com/@gpad/
