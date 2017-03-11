@@ -13,14 +13,14 @@ defmodule NoSlides.GetFsm do
 
   def start_link(req_id, from, k) do
     Logger.debug "Start GetFSM"
-    :gen_fsm.start_link({:local, :get_fsm}, __MODULE__, [req_id, from, k], [])
+    {:ok, _} = :gen_fsm.start_link( __MODULE__, [req_id, from, k], [])
   end
 
   def init([req_id, from, k]) do
     {:ok, :prepare, %{req_id: req_id, from: from, key: k, readers: 0, results: []}, 0}
   end
 
-  # GEt info about on wich nodes write
+  # Get info about on wich nodes write
   def prepare(:timeout, state) do
     idx = :riak_core_util.chash_key({"noslides", state.key})
     # pref_list = :riak_core_apl.get_primary_apl(idx, 1, NoSlides.Service)
