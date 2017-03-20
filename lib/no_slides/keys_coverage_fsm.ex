@@ -23,11 +23,11 @@ defmodule NoSlides.KeysCoverageFsm do
 
   def process_results({data, keys}, state) do
     Logger.debug ">>> [KeysCoverageFsm.process_results]"
-    {:done, Map.update(state, :res, keys, fn res -> [keys | res] end)}
+    {:done, Map.update(state, :res, [keys], fn res -> [keys | res] end)}
   end
 
   def finish(:clean, state) do
-    Logger.debug ">>> [KeysCoverageFsm.finish]"
+    Logger.debug ">>> [KeysCoverageFsm.finish] -> #{inspect state.res}"
     send(state.from, {state.req_id, {:ok, Enum.concat(state.res)}})
     {:stop, :normal, state}
   end
