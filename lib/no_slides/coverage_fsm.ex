@@ -3,8 +3,8 @@ defmodule NoSlides.CoverageFsm do
   @behaviour :riak_core_coverage_fsm
 
   @timeout 5000
-  @n_val 3
-  @vnode_coverage 3
+  @n_val 1
+  @vnode_coverage 1
 
   def start_link(req_id, from, what) do
     Logger.debug "[CoverageFsm.start_link] - req_id: #{inspect req_id} from: #{inspect from} what: #{inspect what}"
