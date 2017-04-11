@@ -17,11 +17,19 @@ defmodule NoSlides.CoverageFsm do
 
   def init(_from, [req_id, from, what, timeout] = args) do
     Logger.debug ">>> [CoverageFsm.init]"
-    {{what, req_id, from}, :allup, @n_val, @vnode_coverage,
-     NoSlides.Service, NoSlides.VNode_master, timeout, %{from: from, req_id: req_id, args: args}}
+    {
+      {what, req_id, from},
+      :allup,
+      @n_val,
+      @vnode_coverage,
+      NoSlides.Service,
+      NoSlides.VNode_master,
+      timeout,
+      %{from: from, req_id: req_id, args: args}
+    }
   end
 
-  def process_results({data, keys}, state) do
+  def process_results({_data, keys}, state) do
     Logger.debug ">>> [CoverageFsm.process_results]"
     {:done, Map.update(state, :res, [keys], fn res -> [keys | res] end)}
   end
