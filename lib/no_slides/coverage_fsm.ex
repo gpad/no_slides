@@ -40,4 +40,10 @@ defmodule NoSlides.CoverageFsm do
     {:stop, :normal, state}
   end
 
+  def finish({:error, reason}, state) do
+    Logger.warn ">>> [CoverageFsm.finish] -> ERROR: #{inspect reason}"
+    send(state.from, {state.req_id, {:error, reason}})
+    {:stop, :normal, state}
+  end
+
 end
