@@ -52,24 +52,21 @@ defmodule NoSlides.Service do
 
   def keys do
     req_id = NoSlides.CoverageFsmSupervisor.start_fsm(:keys)
-    receive do
-      {^req_id, {:ok, keys}} ->
-        keys
-      {^req_id, {:error, reason}} ->
-        {:error, reason}
-    after 5000 ->
-      {:error, :timeout}
-    end
+    wait_result(req_id)
   end
 
   def values do
     req_id = NoSlides.CoverageFsmSupervisor.start_fsm(:values)
+    wait_result(req_id)
+  end
+
+  defp wait_result(req_id, timeout\\5000) do
     receive do
       {^req_id, {:ok, keys}} ->
         keys
       {^req_id, {:error, reason}} ->
         {:error, reason}
-    after 5000 ->
+    after timeout ->
       {:error, :timeout}
     end
   end
