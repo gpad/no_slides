@@ -1,4 +1,4 @@
-defmodule NoSlides.KeysCoverageFsm do
+defmodule NoSlides.CoverageFsm do
   require Logger
   @behaviour :riak_core_coverage_fsm
 
@@ -7,7 +7,7 @@ defmodule NoSlides.KeysCoverageFsm do
   @vnode_coverage 3
 
   def start_link(req_id, from, what) do
-    Logger.debug "[KeysCoverageFsm.start_link] - req_id: #{inspect req_id} from: #{inspect from} what: #{inspect what}"
+    Logger.debug "[CoverageFsm.start_link] - req_id: #{inspect req_id} from: #{inspect from} what: #{inspect what}"
     :riak_core_coverage_fsm.start_link(
       __MODULE__,
       {:pid, req_id, from}, # from
@@ -16,18 +16,18 @@ defmodule NoSlides.KeysCoverageFsm do
 
 
   def init(_from, [req_id, from, what, timeout] = args) do
-    Logger.debug ">>> [KeysCoverageFsm.init]"
+    Logger.debug ">>> [CoverageFsm.init]"
     {{what, req_id, from}, :allup, @n_val, @vnode_coverage,
      NoSlides.Service, NoSlides.VNode_master, timeout, %{from: from, req_id: req_id, args: args}}
   end
 
   def process_results({data, keys}, state) do
-    Logger.debug ">>> [KeysCoverageFsm.process_results]"
+    Logger.debug ">>> [CoverageFsm.process_results]"
     {:done, Map.update(state, :res, [keys], fn res -> [keys | res] end)}
   end
 
   def finish(:clean, state) do
-    Logger.debug ">>> [KeysCoverageFsm.finish] -> #{inspect state.res}"
+    Logger.debug ">>> [CoverageFsm.finish] -> #{inspect state.res}"
     send(state.from, {state.req_id, {:ok, Enum.concat(state.res)}})
     {:stop, :normal, state}
   end

@@ -51,7 +51,7 @@ defmodule NoSlides.Service do
   end
 
   def keys do
-    req_id = NoSlides.KeysCoverageFsmSupervisor.start_keys_fsm(:keys)
+    req_id = NoSlides.CoverageFsmSupervisor.start_fsm(:keys)
     receive do
       {^req_id, {:ok, keys}} ->
         keys
@@ -63,7 +63,7 @@ defmodule NoSlides.Service do
   end
 
   def values do
-    req_id = NoSlides.KeysCoverageFsmSupervisor.start_keys_fsm(:values)
+    req_id = NoSlides.CoverageFsmSupervisor.start_fsm(:values)
     receive do
       {^req_id, {:ok, keys}} ->
         keys

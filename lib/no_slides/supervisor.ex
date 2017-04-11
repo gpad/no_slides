@@ -8,7 +8,7 @@ defmodule NoSlides.Supervisor do
 
   def init(_args) do
     children = [
-      supervisor(NoSlides.KeysCoverageFsmSupervisor, []),
+      supervisor(NoSlides.CoverageFsmSupervisor, []),
       worker(:riak_core_vnode_master, [NoSlides.VNode], id: NoSlides.VNode_master_worker)
     ]
     supervise(children, strategy: :one_for_one, max_restarts: 5, max_seconds: 10)
