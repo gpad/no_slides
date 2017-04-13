@@ -29,9 +29,9 @@ defmodule NoSlides.CoverageFsm do
     }
   end
 
-  def process_results({_data, keys}, state) do
+  def process_results({_index_node, value}, state) do
     Logger.debug ">>> [CoverageFsm.process_results]"
-    {:done, Map.update(state, :res, [keys], fn res -> [keys | res] end)}
+    {:done, Map.update(state, :res, [value], fn res -> [value | res] end)}
   end
 
   def finish(:clean, state) do
