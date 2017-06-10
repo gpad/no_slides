@@ -50,8 +50,8 @@ defmodule NoSlides.VNode do
     {:ok, state}
   end
 
-  def handoff_finished(dest, state) do
-    Logger.debug "[handoff_finished] -\n\tdest: #{inspect dest}\n\tstate: #{inspect state}"
+  def handoff_finished(_dest, state) do
+    Logger.debug "[handoff_finished] state: #{inspect state}"
     {:ok, state}
   end
 
@@ -110,9 +110,14 @@ defmodule NoSlides.VNode do
     :erlang.term_to_binary({k, v})
   end
 
-  def handle_coverage(req, key_spaces, sender, state) do
-    Logger.debug "[handle_coverage] VNODE self: #{inspect self()} #{inspect state}"
-    {:stop, :not_implemented, state}
+  def handle_coverage({:keys, _, _} = req, _key_spaces, {_, ref_id, _} = sender, state) do
+    Logger.debug "[handle_coverage] VNODE req: #{inspect req} sender: #{inspect sender}"
+    {:reply, {ref_id, Map.keys(state.data)}, state}
+  end
+
+  def handle_coverage({:values, _, _} = req, _key_spaces, {_, ref_id, _} = sender, state) do
+    Logger.debug "[handle_coverage] VNODE req: #{inspect req} sender: #{inspect sender}"
+    {:reply, {ref_id, Map.values(state.data)}, state}
   end
 
   def handle_exit(pid, reason, state) do
