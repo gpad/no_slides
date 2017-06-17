@@ -20,11 +20,9 @@ defmodule NoSlides.WriteFsm do
     {:ok, :prepare, %{req_id: req_id, from: from, key: k, value: v, writers: 0}, 0}
   end
 
-  # GEt info about on wich nodes write
+  # Get info about on wich nodes write
   def prepare(:timeout, state) do
     idx = :riak_core_util.chash_key({"noslides", state.key})
-    # pref_list = :riak_core_apl.get_primary_apl(idx, 1, NoSlides.Service)
-    #TODO Verify the 3, is correct?!?
     pref_list = :riak_core_apl.get_apl(idx, @n_val, NoSlides.Service)
 
     {:next_state, :execute, Map.put(state, :pref_list, pref_list), 0}
@@ -32,24 +30,17 @@ defmodule NoSlides.WriteFsm do
 
   # Execute the call on all nodes ...
   def execute(:timeout, state) do
-    # Logger.info("[EXECUTE] state: #{inspect state}")
-
     :riak_core_vnode_master.command(
       state.pref_list,
       {:put, {state.req_id, state.key, state.value}},
       {:fsm, :undefined, self()},
       NoSlides.VNode_master)
-
-    # Logger.info("[EXECUTE] next_state: consolidate")
-
-
     {:next_state, :consolidate, state, @timeout}
   end
 
   # check if we have all data then return it otherwise wait again ... (FOREVER?!??)
   # Why we don't check who resposnse??!
   def consolidate({:ok, _req_id}, state) do
-    # Logger.info("[CONSOLIDATE] req_id: #{req_id} - state: #{inspect state}")
     writers = state.writers + 1
 
     if writers == @n_writers do
@@ -64,7 +55,7 @@ defmodule NoSlides.WriteFsm do
     :ok
   end
 
-  #TODO - Copy from riak ...
+  #TODO - Change for remove warning
   defp mk_reqid do
     :erlang.phash2(:erlang.now())
   end
