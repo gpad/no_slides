@@ -2,7 +2,18 @@
 
 Example application for the talk at [NoSlidesConf][0]. This application is a sample application with some functionalities available on riak_core.
 
-**You need to use Elixir 1.3 and Erlang 18.X**. There are some works on [riak_core][1] and [riak_core_ng][2] to move on Erlang 19.X, but when I wrote this docs it's not ready.
+## Erlang, Elixir, Rebar3 version
+On this branch I start to use [asdf][4] and as you can find [here](./.tool-versions) I compile everything with:
+
+```
+erlang 19.3
+elixir 1.4.2
+```
+
+I did a lot of problem to compile this because elixir now use rebar3 v 3.5.0 or greater, and it issue some problem especially with `cuttlefish` or other packages that want create and escript. Using an old version of rebar, the `3.2.0` for example everything works fine ...
+
+
+There are some works on [riak_core][1] and [riak_core_ng][2] to move on Erlang 19.X, but when I wrote this docs it's not ready.
 
 Clone the repository as usually, download the dependencies and compile the app in this way:
 
@@ -106,4 +117,5 @@ Thanks to:
 [1]: https://github.com/basho/riak_core/
 [2]: https://github.com/project-fifo/riak_core
 [3]: https://hex.pm/packages/riak_core_ng
+[4]: https://github.com/asdf-vm/asdf
 [99]: https://medium.com/@gpad/
