@@ -125,4 +125,7 @@ defmodule NoSlides.VNode do
     {:noreply, state}
   end
 
+  def handle_overload_command(_, _, _), do: :ok
+  def handle_overload_info(_, _), do: :ok
+
 end
