@@ -29,7 +29,9 @@ defmodule NoSlides.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:riak_core, "~> 3.0", hex: :riak_core_ng}
+      {:riak_core, "~> 3.0.9", hex: :riak_core_ng},
+      {:cuttlefish, git: "https://github.com/gpad/cuttlefish", branch: "develop", override: true},
+      {:poolboy, "~> 1.5.1", override: true},
     ]
   end
 end
