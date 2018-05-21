@@ -107,3 +107,8 @@ Thanks to:
 [2]: https://github.com/project-fifo/riak_core
 [3]: https://hex.pm/packages/riak_core_ng
 [99]: https://medium.com/@gpad/
+
+
+# License
+This code is released under Apache 2 License.
+Check LICENSE file for more information.
